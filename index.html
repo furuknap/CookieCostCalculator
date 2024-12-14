@@ -1,0 +1,158 @@
+@ -0,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cookie Cost Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6.26.0/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        input { margin: 5px 0; width: 100%; padding: 5px; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .ingredient-row { display: contents; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function CookieCostCalculator() {
+            const [language, setLanguage] = React.useState('en');
+            const [ingredients, setIngredients] = React.useState([
+                { name: '', quantity: 0, unit: '', pricePerUnit: 0, costConversionFactor: 1 }
+            ]);
+            const [batchSize, setBatchSize] = React.useState(0);
+            const [cookingTime, setCookingTime] = React.useState(0);
+            const [totalCost, setTotalCost] = React.useState(0);
+
+            const translations = {
+                en: {
+                    title: 'Cookie Cost Calculator',
+                    batchSize: 'Number of Cookies in Batch',
+                    cookingTime: 'Cooking Time (minutes)',
+                    addIngredient: 'Add Ingredient',
+                    calculate: 'Calculate Cost',
+                    costPerUnit: 'Cost per Cookie',
+                    ingredientHeaders: ['Ingredient', 'Quantity', 'Unit', 'Price/Unit', 'Conversion']
+                },
+                es: {
+                    title: 'Calculadora de Costo de Galletas',
+                    batchSize: 'Número de Galletas en el Lote',
+                    cookingTime: 'Tiempo de Cocción (minutos)',
+                    addIngredient: 'Añadir Ingrediente',
+                    calculate: 'Calcular Costo',
+                    costPerUnit: 'Costo por Galleta',
+                    ingredientHeaders: ['Ingrediente', 'Cantidad', 'Unidad', 'Precio/Unidad', 'Conversión']
+                }
+            };
+
+            const t = translations[language];
+
+            const addIngredient = () => {
+                setIngredients([...ingredients, 
+                    { name: '', quantity: 0, unit: '', pricePerUnit: 0, costConversionFactor: 1 }
+                ]);
+            };
+
+            const updateIngredient = (index, field, value) => {
+                const newIngredients = [...ingredients];
+                newIngredients[index][field] = value;
+                setIngredients(newIngredients);
+            };
+
+            const calculateCost = () => {
+                const totalIngredientCost = ingredients.reduce((sum, ingredient) => {
+                    const ingredientCost = (ingredient.quantity / ingredient.costConversionFactor) * ingredient.pricePerUnit;
+                    return sum + ingredientCost;
+                }, 0);
+
+                const costPerUnit = batchSize > 0 ? (totalIngredientCost / batchSize) : 0;
+                setTotalCost(costPerUnit);
+            };
+
+            const removeIngredient = (index) => {
+                setIngredients(ingredients.filter((_, i) => i !== index));
+            };
+
+            return React.createElement('div', null, 
+                React.createElement('h1', null, t.title),
+                React.createElement('div', null,
+                    React.createElement('label', null,
+                        language === 'en' ? 'English' : 'Español',
+                        React.createElement('input', {
+                            type: 'checkbox',
+                            checked: language === 'es',
+                            onChange: () => setLanguage(language === 'en' ? 'es' : 'en')
+                        })
+                    )
+                ),
+                React.createElement('div', null,
+                    React.createElement('label', null, t.batchSize),
+                    React.createElement('input', {
+                        type: 'number',
+                        value: batchSize,
+                        onChange: (e) => setBatchSize(Number(e.target.value))
+                    })
+                ),
+                React.createElement('div', null,
+                    React.createElement('label', null, t.cookingTime),
+                    React.createElement('input', {
+                        type: 'number',
+                        value: cookingTime,
+                        onChange: (e) => setCookingTime(Number(e.target.value))
+                    })
+                ),
+                React.createElement('div', { className: 'grid' },
+                    t.ingredientHeaders.map(header => 
+                        React.createElement('span', { key: header }, header)
+                    ),
+                    ingredients.map((ingredient, index) => 
+                        React.createElement('div', { key: index, className: 'ingredient-row' },
+                            React.createElement('input', {
+                                placeholder: 'Name',
+                                value: ingredient.name,
+                                onChange: (e) => updateIngredient(index, 'name', e.target.value)
+                            }),
+                            React.createElement('input', {
+                                type: 'number',
+                                placeholder: 'Qty',
+                                value: ingredient.quantity,
+                                onChange: (e) => updateIngredient(index, 'quantity', Number(e.target.value))
+                            }),
+                            React.createElement('input', {
+                                placeholder: 'Unit',
+                                value: ingredient.unit,
+                                onChange: (e) => updateIngredient(index, 'unit', e.target.value)
+                            }),
+                            React.createElement('input', {
+                                type: 'number',
+                                placeholder: 'Price',
+                                value: ingredient.pricePerUnit,
+                                onChange: (e) => updateIngredient(index, 'pricePerUnit', Number(e.target.value))
+                            }),
+                            React.createElement('input', {
+                                type: 'number',
+                                placeholder: 'Conv',
+                                value: ingredient.costConversionFactor,
+                                onChange: (e) => updateIngredient(index, 'costConversionFactor', Number(e.target.value))
+                            }),
+                            React.createElement('button', {
+                                onClick: () => removeIngredient(index)
+                            }, 'Remove')
+                        )
+                    )
+                ),
+                React.createElement('button', { onClick: addIngredient }, t.addIngredient),
+                React.createElement('button', { onClick: calculateCost }, t.calculate),
+                totalCost > 0 && 
+                    React.createElement('div', null,
+                        React.createElement('h3', null, `${t.costPerUnit}: $${totalCost.toFixed(2)}`)
+                    )
+            );
+        }
+
+        ReactDOM.render(React.createElement(CookieCostCalculator), document.getElementById('root'));
+    </script>
+</body>
+</html>
