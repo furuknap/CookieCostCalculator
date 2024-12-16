@@ -2,6 +2,9 @@
   "name": "cookie-cost-calculator",
   "version": "0.1.0",
   "private": true,
+    "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-switch": "^1.1.2",
